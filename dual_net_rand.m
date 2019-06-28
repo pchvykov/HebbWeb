@@ -5,7 +5,7 @@
 %--------------------------------
 clear
 nAgSqrt=30;
-nAg=nAgSqrt^2; nId=150; %number of agents and ideas
+nAg=nAgSqrt^2; nId=50; %number of agents and ideas
 maxId=4; tSteps=1E7;
 socConn=spalloc(nAg,nAg,2*nAg);
 agreeFl=true;
@@ -50,6 +50,8 @@ agList=1:nAg; colorbar; colormap('jet');
 caxis([0,2^nId]); %caxis([0,1]);
 tic
 for it=1:tSteps
+  ia=randi(nAg); id=find(agSts(ia,:)); 
+  if(~isempty(id) && rand>0.3); id=randsample(id,1); agSts(ia,id)=0; end %randomly forget an old idea
   ia=randi(nAg); %choose agent to update %mod(it,nAg)+1;%
   nghbrs=agList(logical(socConn(ia,:))); in=nghbrs(randi(length(nghbrs))); %choose neighbor
 %   in=randsample(nAg,1,true,full(socConn(ia,:))); %slower
@@ -57,9 +59,9 @@ for it=1:tSteps
 %   pInt=(agSts(ia,:)*agSts(in,:)')./maxId; %interaction probability
 %   if(agreeFl || pInt>=0.3)%rand) %update state
     diff=agSts(in,:)-agSts(ia,:); % =0 where same, =1 where nghb likes, =-1 where I like
-    if(sum(abs(diff))>0)
+    if(sum((diff))>0)
 %     tmp=find(agSts(ia,:));%find(diff<0); 
-    tmp=find(diff<0); agSts(ia,tmp(randi(length(tmp))))=0; %remove old idea
+%     tmp=find(diff<0); agSts(ia,tmp(randi(length(tmp))))=0; %remove old idea
 %     agSts(ia,randsample(nId,1,true,diff<0))=0; %slow
     tmp=find(diff>0); agSts(ia,tmp(randi(length(tmp))))=1; %add new idea
     end
