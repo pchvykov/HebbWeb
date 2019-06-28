@@ -5,8 +5,8 @@
 %--------------------------------
 clear
 nAgSqrt=30;
-nAg=nAgSqrt^2; nId=60; %number of agents and ideas
-maxId=9; tSteps=1E7;
+nAg=nAgSqrt^2; nId=20; %number of agents and ideas
+maxId=3; tSteps=1E7;
 socConn=spalloc(nAg,nAg,2*nAg);
 agreeFl=true;
 
@@ -23,7 +23,7 @@ for ii=1:nAg
   end
 end
 %grid connectivity:
-socConn=delsq(numgrid('S', nAgSqrt+2)); socConn=-socConn+diag(diag(socConn));
+% socConn=delsq(numgrid('S', nAgSqrt+2)); socConn=-socConn+diag(diag(socConn));
 
 %Visualize network:
 G=graph(socConn,'OmitSelfLoops'); %create and show the graph
@@ -46,15 +46,18 @@ for ia=1:nAg %initialize knowledge states randomly
   agSts(ia,randsample(nId,maxId,false))=1;
 end
 rng(4);
+% inStr.tSteps=tSteps; inStr.agSts=agSts; inStr.socConn=socConn;
+tic
+netSim_mex(agSts,socConn,tSteps);
+toc
+return
 cols=zeros(nAg, 1);
-agList=1:nAg; colorbar; colormap('jet');
+colorbar; colormap('jet');
 caxis([0,2^nId]); %caxis([0,1]);
 tic
 for it=1:tSteps
   ia=randi(nAg); %choose agent to update %mod(it,nAg)+1;%
-  nghbrs=find(socConn(ia,:));
-%   nghbrs=agList(logical(socConn(ia,:))); 
-  in=nghbrs(randi(length(nghbrs))); %choose neighbor
+  nghbrs=agList(logical(socConn(ia,:))); in=nghbrs(randi(length(nghbrs))); %choose neighbor
 %   in=randsample(nAg,1,true,full(socConn(ia,:))); %slower
 
 %   pInt=(agSts(ia,:)*agSts(in,:)')./maxId; %interaction probability
@@ -103,3 +106,6 @@ for it=1:tSteps
 end
 toc
 
+return
+%% C++ compiler
+codegen netSim -args {coder.typeof(0,[10000,1000],[1,1]),coder.typeof(spalloc(10000,10000,20000),[],1),0}
