@@ -3,10 +3,11 @@
 %dual to network of ideas rewiring
 %CSSS 2019
 %--------------------------------
-clear
+clear;
+clf;
 nAgSqrt=30;
 nAg=nAgSqrt^2; nId=60; %number of agents and ideas
-maxId=9; tSteps=1E7;
+maxId=3; tSteps=1E7;
 socConn=spalloc(nAg,nAg,2*nAg);
 agreeFl=true;
 
@@ -16,7 +17,7 @@ rng(2);
 for ii=1:nAg
   for ir=1:20; rand; end %ensure rand is uncorrelated
   for ie=1:2
-    if(ie>1  && rand>-0.03); continue; end %modulate connectivity
+    if(ie>1  && rand>0.03); continue; end %modulate connectivity
   attTo=randsample(nAg,1,true,ndDeg.^1); %preferntial attachment
   socConn(ii,attTo)=1; socConn(attTo,ii)=1;
   ndDeg(ii)=round(ndDeg(ii)+1); ndDeg(attTo)=round(ndDeg(attTo)+1);
@@ -48,9 +49,13 @@ end
 rng(4);
 cols=zeros(nAg, 1);
 agList=1:nAg; colorbar; colormap('jet');
-caxis([0,2^nId]); %caxis([0,1]);
+% caxis([0,2^nId]); %caxis([0,1]);
 tic
 for it=1:tSteps
+  if(rand>0.4) %remove old idea
+    ia=randi(nAg); id=find(agSts(ia,:));
+    if(~isempty(id)); agSts(ia,id(randi(length(id))))=0; end
+  end
   ia=randi(nAg); %choose agent to update %mod(it,nAg)+1;%
   nghbrs=find(socConn(ia,:));
 %   nghbrs=agList(logical(socConn(ia,:))); 
@@ -66,9 +71,9 @@ for it=1:tSteps
 %     agSts(ia,randsample(nId,1,true,diff<0))=0; %slow
     tmp=find(diff>0); agSts(ia,tmp(randi(length(tmp))))=1; %add new idea
     %remove random old idea:
-    id=[];
-    while(isempty(id)); ia=randi(nAg); id=find(agSts(ia,:)); end
-    agSts(ia,id(randi(length(id))))=0; 
+%     id=[];
+%     while(isempty(id)); ia=randi(nAg); id=find(agSts(ia,:)); end
+%     agSts(ia,id(randi(length(id))))=0; 
     end
 %   else %if very different, repel
 %     diff=~(agSts(in,:) & agSts(ia,:)); % =0 where same, =1 else
