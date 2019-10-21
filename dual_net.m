@@ -8,7 +8,7 @@ nAgSqrt=30;
 nAg=nAgSqrt^2; nId=300; %number of agents and ideas
 maxId=7; tSteps=1E7;
 socConn=spalloc(nAg,nAg,2*nAg);
-agreeFl=true; saveMov=true;
+agreeFl=true; saveMov=false;
 
 %% Construct the network
 ndDeg=zeros(1,nAg)+1E-3;
@@ -81,7 +81,7 @@ for it=1:1E7%tSteps
 %   end
 
 %   cols(ia) = mean(agSts(ia, :)*agSts(nghbrs, :)')./maxId; 
-  if(mod(it,1E5)==1 && it>-7E5)
+  if(mod(it,1E4)==1 && it>-7E5)
 %     cols=sum(socConn.*(agSts*agSts'))./maxId./ndDeg; %neighbor similarity metric
     cols=bi2de(agSts);
     gr.NodeCData=cols; [uCol,uix]=unique(cols);
