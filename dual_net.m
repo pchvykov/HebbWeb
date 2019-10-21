@@ -39,7 +39,7 @@ loglog(deg,cumnum,'.');
 tmp1=polyfit(log(deg),log(cumnum),1); title(['slope=', num2str(round(tmp1(1),2))],'FontSize',12);
 return
 end
-%% Run the dynamics
+%% Initialize variables and run the dynamics
 agSts=zeros(nAg,nId);
 for ia=1:nAg %initialize knowledge states randomly
   agSts(ia,randsample(nId,maxId,false))=1;
@@ -59,6 +59,7 @@ if(saveMov);
 open(writerObj);
 end
 for it=1:1E7%tSteps
+  %% The algorithm at each time-step-----------------------
   ia=randi(nAg); %choose agent to update %mod(it,nAg)+1;%
   nghbrs=agList(logical(socConn(ia,:))); in=nghbrs(randi(length(nghbrs))); %choose neighbor
 %   in=randsample(nAg,1,true,full(socConn(ia,:))); %slower
@@ -66,7 +67,7 @@ for it=1:1E7%tSteps
 %   pInt=(agSts(ia,:)*agSts(in,:)')./maxId; %interaction probability
 %   if(agreeFl || pInt>=0.3)%rand) %update state
     diff=agSts(in,:)-agSts(ia,:); % =0 where same, =1 where nghb likes, =-1 where I like
-    if(sum(abs(diff))>0)
+    if(sum(abs(diff))>0) %if there are any differences
 %     tmp=find(agSts(ia,:));%find(diff<0); 
     tmp=find(diff<0); agSts(ia,tmp(randi(length(tmp))))=0; %remove old idea
 %     agSts(ia,randsample(nId,1,true,diff<0))=0; %slow
@@ -79,7 +80,7 @@ for it=1:1E7%tSteps
 %     tmp=find(diff & ~agSts(ia,:)); agSts(ia,tmp(randi(length(tmp))))=1; %add new idea
 %     end
 %   end
-
+  %% Analyzing and showing the two networks-------------------
 %   cols(ia) = mean(agSts(ia, :)*agSts(nghbrs, :)')./maxId; 
   if(mod(it,1E4)==1 && it>-7E5)
 %     cols=sum(socConn.*(agSts*agSts'))./maxId./ndDeg; %neighbor similarity metric
