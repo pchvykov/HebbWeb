@@ -82,13 +82,13 @@ for it=1:1E7%tSteps
 %   end
   %% Analyzing and showing the two networks-------------------
 %   cols(ia) = mean(agSts(ia, :)*agSts(nghbrs, :)')./maxId; 
-  if(mod(it,1E4)==1 && it>-7E5)
+  if(mod(it,1E4)==1 && it>-7E5) %execute every "this many" time-steps
 %     cols=sum(socConn.*(agSts*agSts'))./maxId./ndDeg; %neighbor similarity metric
-    cols=bi2de(agSts);
+    cols=bi2de(agSts); %color-code the unique cultures
     gr.NodeCData=cols; [uCol,uix]=unique(cols);
     subplot(131); title(['time: ',num2str(it)]);%,';   ',num2str(length(uCol)),' unique cultures']);
     
-    idConn=agSts'*agSts; idConn=idConn-diag(diag(idConn));
+    idConn=agSts'*agSts; idConn=idConn-diag(diag(idConn)); %compute weights of the semantic net
 %     idConn(idConn<max(max(idConn))/10)=0; %cut off weak links for visual clarity
     Gi=graph(idConn,'OmitSelfLoops');
     EdWt=(Gi.Edges.Weight); LWidths = 3.5*(EdWt-min(EdWt)+1E-3)/(max(EdWt)-min(EdWt)); LWidths(LWidths==Inf)=1; %for if all weights are the same
