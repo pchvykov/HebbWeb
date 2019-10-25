@@ -143,7 +143,7 @@ for rng_seed=1:rng_max
     %     idConn(idConn<max(max(idConn))/10)=0; %cut off weak links for visual clarity
         idConn_data(:,:,t_count) = idConn; %3D array stores states of idConn array at sequential time steps
         idConn_total_data(:,:,t_count,rng_seed) = idConn; %4D array stores states of idConn array at sequential times steps with 4th dim being interation of simulation
-        
+
         glob_eff(t_count) = efficiency_bin(idConn);
         t_count = t_count + 1;
 
@@ -281,8 +281,7 @@ for rng_seed=1:rng_max
     %     idConn(idConn<max(max(idConn))/10)=0; %cut off weak links for visual clarity
         idConn_data(:,:,t_count) = idConn; %3D array stores states of idConn array at sequential time steps
         idConn_total_data(:,:,t_count,(rng_max + rng_seed)) = idConn; %4D array stores states of idConn array at sequential times steps with 4th dim being interation of simulation
-        
-        
+
         glob_eff(t_count) = efficiency_bin(idConn);
         t_count = t_count + 1;
 
@@ -420,8 +419,7 @@ for rng_seed=1:rng_max
     %     idConn(idConn<max(max(idConn))/10)=0; %cut off weak links for visual clarity
         idConn_data(:,:,t_count) = idConn; %3D array stores states of idConn array at sequential time steps
         idConn_total_data(:,:,t_count,((2 * rng_max) + rng_seed)) = idConn; %4D array stores states of idConn array at sequential times steps with 4th dim being interation of simulation
-        
-        
+
         glob_eff(t_count) = efficiency_bin(idConn);
         t_count = t_count + 1;
 
@@ -439,6 +437,7 @@ for rng_seed=1:rng_max
 end
 
 save(['idConn_data_WS_nAg' num2str(nAg) '_nID' num2str(nId) '_maxId' num2str(maxId) '_tSteps' num2str(tSteps) '_rng_max' num2str(rng_max) '_' datestr(now, 'YYYY-mm-dd_HH:MM:SS:FFF') '.mat'], 'idConn_data')
+
 save(['idConn_total_data_nAg' num2str(nAg) '_nID' num2str(nId) '_maxId' num2str(maxId) '_tSteps' num2str(tSteps) '_rng_max' num2str(rng_max) '_' datestr(now, 'YYYY-mm-dd_HH:MM:SS:FFF') '.mat'], 'idConn_total_data')
 
 
