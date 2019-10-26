@@ -37,7 +37,7 @@ function E=efficiency_bin(A,local)
 
 n=length(A);                                %number of nodes
 A(1:n+1:end)=0;                             %clear diagonal
-A=double(A~=0);                             %enforce double precision
+% A=double(A~=0);                             %enforce double precision
 
 if exist('local','var') && local            %local efficiency
     E=zeros(n,1);    
@@ -53,7 +53,7 @@ if exist('local','var') && local            %local efficiency
         end
     end
 else                                        %global efficiency
-    e=distance_inv(A);
+    e=distanceWt_inv(A);
     E=sum(e(:))./(n^2-n);
 end
 
@@ -67,10 +67,18 @@ n_=length(A_);
 Idx=true;
 while any(Idx(:))
     l=l+1;
-    Lpath=Lpath*A_;
+    Lpath=Lpath*A_; %how many ways to get between each pair of nodes in l steps
     Idx=(Lpath~=0)&(D==0);
     D(Idx)=l;
 end
 
 D(~D | eye(n_))=inf;                        %assign inf to disconnected nodes and to diagonal
 D=1./D;                                     %invert distance
+
+
+function D=distanceWt_inv(A_) %weighted inverse distance
+n_=length(A_);
+D = A_/(eye(n_)-A_); %probability of getting between nodes
+D(1:n_+1:end)=0;
+
+
