@@ -14,15 +14,16 @@
 % efficiency_bin.m which I've also added to repo. - Billy
 
 
-clear;
+% clear;
 clf;
-nAgSqrt=20;
+nAgSqrt=30;
 nAg=nAgSqrt^2; nId=40; %number of agents and ideas
-maxId=7; tSteps=1E6;
-socConn=spalloc(nAg,nAg,2*nAg);
+nIdMin=30; noiseP=1E-2; %min number of ideas or noise amplitude - to keep from converging to monoculture
+maxId=7; tSteps=3E6;
 agreeFl=true; saveMov=false;
-rng_max = 1; %number of random realizations
-idConnAll=[]; %data storage
+rng_max = 10; %number of random realizations
+idConnAll=[]; effPlot=[]; %data storage
+idConnRun=[];
 for net_type=1:3
 
 for rng_seed=1:rng_max
@@ -31,7 +32,8 @@ for rng_seed=1:rng_max
     %% Construct the network
     ndDeg=zeros(1,nAg)+1E-3;
 %     rng_seed = 4;
-    rng(100+rng_seed);
+    rng(rng_seed);
+    socConn=spalloc(nAg,nAg,2*nAg);
 
 switch net_type
   case 1
@@ -85,7 +87,7 @@ end
 
     %Visualize network:
     G=graph(socConn, 'OmitSelfLoops'); %create and show the graph
-    subplot(121);
+    subplot(221);
     gr=plot(G, 'Layout','force');
     % labelnode(gr,1:nAg,1:nAg);
     ndDeg=sum(socConn);
@@ -130,33 +132,43 @@ end
         diff=agSts(in,:)-agSts(ia,:); % =0 where same, =1 where nghb likes, =-1 where I like
         if(sum(abs(diff))>0) %if there are any differences
     %     tmp=find(agSts(ia,:));%find(diff<0); 
-        tmp=find(diff<0); agSts(ia,tmp(randi(length(tmp))))=0; %remove old idea
+        tmp=find(diff<0); ii=tmp(randi(length(tmp))); agSts(ia,ii)=0; %remove old idea
     %     agSts(ia,randsample(nId,1,true,diff<0))=0; %slow
-        tmp=find(diff>0); agSts(ia,tmp(randi(length(tmp))))=1; %add new idea
+      idCarriers=sum(agSts);
+      if(sum(idCarriers>0)<nIdMin)% && idCarriers(ii)==0) %if too few ideas remain in population, inject noise
+%         agSts(ia,ii)=1; %restore the lost idea
+%       if(rand>1-noiseP) %inject noise!
+        tmp=find(agSts(ia,:)==0); agSts(ia,tmp(randi(length(tmp))))=1; %add random new idea
+      else
+        tmp=find(diff>0); agSts(ia,tmp(randi(length(tmp))))=1; %add new idea from neighbor
+      end
         end
 
       %% Analyzing and showing the two networks-------------------
     %   cols(ia) = mean(agSts(ia, :)*agSts(nghbrs, :)')./maxId; 
-   if(mod(it,1E3)==1 && it>-7E5) %execute every "this many" time-steps    
+   if(mod(it,2E3)==1 && it>-7E5) %execute every "this many" time-steps    
     idConn=agSts'*agSts; idConn=idConn-diag(diag(idConn)); %compute weights of the semantic net
 %     idConn(idConn<max(max(idConn))/10)=0; %cut off weak links for visual clarity
 %     idConn_data(:,:,t_count) = idConn; %3D array stores states of idConn array at sequential time steps
-    idConnAll(:,:,t_count,rng_seed+rng_max*(net_type-1)) = idConn; %4D array stores states of idConn array at sequential times steps with 4th dim being interation of simulation
+    idConnRun(:,:,t_count) = idConn; %4D array stores states of idConn array at sequential times steps with 4th dim being interation of simulation
 %         glob_eff(t_count) = efficiency_bin(idConn);
+        effPlot(t_count,rng_seed+rng_max*(net_type-1))=(efficiency_bin(idConn/nAg/maxId));
+        if(t_count==1); effPlot(:,rng_seed+rng_max*(net_type-1))=inf; end
         t_count = t_count + 1;
-    if(mod(it,1E4)==1)   %show plots for monitoring
+    if(mod(it,5E4)==1)   %show plots for monitoring
 %     cols=sum(socConn.*(agSts*agSts'))./maxId./ndDeg; %neighbor similarity metric
     cols=bi2de(agSts); %color-code the unique cultures
     gr.NodeCData=cols; [uCol,uix]=unique(cols);
-    subplot(121); title(['time: ',num2str(it)]);%,';   ',num2str(length(uCol)),' unique cultures']);
+    subplot(221); title(['time: ',num2str(it)]);%,';   ',num2str(length(uCol)),' unique cultures']);
 
     Gi=graph(idConn,'OmitSelfLoops');
     EdWt=(Gi.Edges.Weight); LWidths = 3.5*(EdWt-min(EdWt)+1E-3)/(max(EdWt)-min(EdWt)); LWidths(LWidths==Inf)=1; %for if all weights are the same
     if(~exist('xx','var')); xx=7*rand(nId,1); yy=7*rand(nId,1); end
-    subplot(122); giPl=plot(Gi, 'Layout','force','LineWidth',LWidths,'XStart',xx,'YStart',yy,'Iterations',1);
+    subplot(222); giPl=plot(Gi, 'Layout','force','LineWidth',LWidths,'XStart',xx,'YStart',yy,'Iterations',1);
     tmp=find(sum(idConn)>0); %idConn=idConn(tmp,tmp);
     xx=get(giPl,'XData'); yy=get(giPl,'YData'); axis([min(xx(tmp)),max(xx(tmp)),min(yy(tmp)),max(yy(tmp))]);
     title([num2str(length(tmp)),' ideas present']);
+    subplot(212),plot(effPlot);
     
 %     idConn1=agSts(uix,:); idConn1=squeeze(sum(idConn1 & permute(idConn1,[3,2,1]),2));
 %     Gi=graph(idConn1,'OmitSelfLoops');
@@ -177,6 +189,7 @@ end
     end
     toc
 
+    idConnAll=cat(4,idConnAll,idConnRun);
     % plot(glob_eff)
 
 
